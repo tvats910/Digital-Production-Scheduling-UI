@@ -8,48 +8,44 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
-<body class="bg-gray-50 font-sans">
+<body class="bg-slate-50 font-sans">
     <nav class="bg-[#1e3a8a] text-white p-4 shadow-lg mb-8">
         <div class="container mx-auto flex justify-between items-center">
-            <h1 class="text-xl font-bold tracking-tight">UNO MINDA <span class="font-light">| Analytics</span></h1>
-            <a href="index.html" class="hover:text-blue-200 text-sm font-semibold border border-white/30 px-4 py-1 rounded-full transition">Back to Dashboard</a>
+            <h1 class="text-xl font-black tracking-tight">UNO MINDA <span class="font-light opacity-80">| Analytics</span></h1>
+            <a href="/frontend/index.html" class="hover:bg-white/10 text-[10px] font-black border-2 border-white/20 px-6 py-2 rounded-full transition-all uppercase tracking-widest">Back to Dashboard</a>
         </div>
     </nav>
 
-    <div class="container mx-auto px-4">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 text-center">
-            <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-blue-600">
-                <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Active Machines</p>
-                <h3 id="activeCount" class="text-3xl font-black text-gray-800">--</h3>
+    <div class="container mx-auto px-4 max-w-6xl">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10 text-center">
+            <div class="bg-white p-6 rounded-3xl shadow-sm border-b-8 border-blue-600">
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Active Stations</p>
+                <h3 id="activeCount" class="text-5xl font-black text-slate-800">--</h3>
             </div>
-            <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-red-500">
-                <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Idle Machines</p>
-                <h3 id="idleCount" class="text-3xl font-black text-gray-800">--</h3>
+            <div class="bg-white p-6 rounded-3xl shadow-sm border-b-8 border-rose-500">
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Idle Capacity</p>
+                <h3 id="idleCount" class="text-5xl font-black text-slate-800">--</h3>
             </div>
-            <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-green-500">
-                <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Avg Utilization</p>
-                <h3 id="avgUtil" class="text-3xl font-black text-gray-800">--%</h3>
+            <div class="bg-white p-6 rounded-3xl shadow-sm border-b-8 border-emerald-500">
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Avg Load Intensity</p>
+                <h3 id="avgUtil" class="text-5xl font-black text-slate-800">--%</h3>
             </div>
         </div>
 
-        <div class="max-w-5xl mx-auto bg-white p-8 rounded-3xl shadow-xl border border-gray-100 overflow-hidden relative">
-            <div class="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-blue-600 to-indigo-400"></div>
+        <div class="bg-white p-10 rounded-[3rem] shadow-2xl border border-slate-100 relative overflow-hidden mb-12">
+            <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-600 via-indigo-500 to-emerald-400"></div>
             
-            <div class="flex justify-between items-end mb-8">
+            <div class="flex justify-between items-start mb-12">
                 <div>
-                    <h2 class="text-xl font-black text-gray-800 tracking-tight">Station Load Distribution</h2>
-                    <p class="text-xs text-gray-400 font-medium italic">Measured against 22-hour available shift</p>
+                    <h2 class="text-3xl font-black text-slate-800 tracking-tighter leading-none mb-3">Machine Utilization Report</h2>
+                    <p class="text-sm text-slate-400 font-medium">Real-time load distribution across the production line</p>
                 </div>
-                <div id="loadingStatus" class="bg-blue-50 text-blue-600 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest animate-pulse">Syncing Engine...</div>
+                <div id="loadingStatus" class="bg-blue-50 text-blue-600 px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest animate-pulse shadow-sm">Syncing Live Data</div>
             </div>
 
-            <div class="relative h-[450px]">
+            <div class="relative w-full h-[500px]">
                 <canvas id="utilChart"></canvas>
             </div>
-        </div>
-
-        <div id="errorMessage" class="hidden mt-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl text-center text-sm">
-            Connection Lost. Ensure Python backend is running on port 8000.
         </div>
     </div>
 
@@ -58,13 +54,15 @@
             try {
                 const res = await axios.get('http://127.0.0.1:8000/utilization-last');
                 if (res.data.error) {
-                    document.getElementById('loadingStatus').innerText = "No Run Data Found";
+                    document.getElementById('loadingStatus').innerHTML = "⚠️ Load Error: Run Optimizer First";
+                    document.getElementById('loadingStatus').classList.remove('animate-pulse');
                     return;
                 }
                 renderAnalytics(res.data);
                 document.getElementById('loadingStatus').classList.add('hidden');
-            } catch (err) {
-                document.getElementById('errorMessage').classList.remove('hidden');
+            } catch (err) { 
+                console.error(err); 
+                document.getElementById('loadingStatus').innerText = "Connection Failed";
             }
         };
 
@@ -76,53 +74,68 @@
             const avg = utilData.length > 0 
                 ? (utilData.reduce((acc, curr) => acc + (curr['Utilization_%'] || 0), 0) / utilData.length).toFixed(1) 
                 : 0;
-            document.getElementById('avgUtil').innerText = avg + "%";
+            document.getElementById('avgUtil').innerText = avg;
 
             const ctx = document.getElementById('utilChart').getContext('2d');
-            const gradient = ctx.createLinearGradient(0, 400, 0, 0); // Vertical gradient
+            
+            // Create a stunning blue-to-indigo gradient
+            const gradient = ctx.createLinearGradient(0, 0, 0, 500);
             gradient.addColorStop(0, '#3b82f6');
-            gradient.addColorStop(1, '#60a5fa');
+            gradient.addColorStop(1, '#6366f1');
 
             new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: utilData.map(m => m.Machine),
                     datasets: [{
-                        label: 'Utilization %',
                         data: utilData.map(m => m['Utilization_%'] || 0),
                         backgroundColor: utilData.map(m => {
                             const v = m['Utilization_%'];
-                            if (v > 90) return '#10b981'; // Success Green
-                            if (v < 50) return '#f43f5e'; // Warning Red
-                            return gradient;
+                            if (v > 95) return '#059669'; // Emerald for high performance
+                            if (v < 40) return '#f43f5e'; // Rose for low util
+                            return gradient; // Indigo/Blue for normal
                         }),
-                        borderRadius: 12,
-                        barThickness: 35,
+                        borderRadius: 15,
+                        barThickness: 45, // Thicker bars for a more professional look
+                        hoverBackgroundColor: '#1e293b'
                     }]
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: false,
+                    maintainAspectRatio: false, // CRITICAL: This allows it to fill the h-[500px] container
+                    animation: {
+                        duration: 2000,
+                        easing: 'easeOutQuart'
+                    },
                     plugins: {
                         legend: { display: false },
                         tooltip: {
-                            backgroundColor: '#1e293b',
-                            padding: 12,
+                            backgroundColor: '#0f172a',
+                            titleFont: { size: 14, weight: '900' },
+                            padding: 15,
+                            cornerRadius: 15,
                             displayColors: false,
-                            callbacks: { label: (ctx) => ` Load Intensity: ${ctx.raw.toFixed(1)}%` }
+                            callbacks: {
+                                label: (context) => ` Current Load: ${context.raw.toFixed(1)}%`
+                            }
                         }
                     },
                     scales: {
                         y: { 
                             max: 100, 
-                            grid: { color: '#f8fafc' }, 
-                            border: { display: false },
-                            ticks: { callback: v => v + "%", font: { weight: 'bold' } } 
+                            grid: { color: '#f1f5f9', drawBorder: false }, 
+                            ticks: { 
+                                callback: v => v + "%", 
+                                font: { weight: '800', size: 12 }, 
+                                color: '#94a3b8' 
+                            }
                         },
                         x: { 
                             grid: { display: false }, 
-                            border: { display: false }, 
-                            ticks: { font: { weight: 'bold', size: 13 } } 
+                            ticks: { 
+                                font: { weight: '900', size: 16 }, 
+                                color: '#1e293b' 
+                            } 
                         }
                     }
                 }

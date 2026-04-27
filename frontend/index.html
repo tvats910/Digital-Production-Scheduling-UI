@@ -1,232 +1,475 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
+  <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Smart APS | Uno Minda</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <style>
-        .dark { background-color: #0f172a; color: #f8fafc; }
-        .dark .bg-white { background-color: #1e293b; border-color: #334155; }
-        .minda-red { border-top: 4px solid #ed1c24; }
-        .minda-blue { border-top: 4px solid #1e3a8a; }
-        .download-btn { @apply w-full text-left px-4 py-2 text-[10px] font-bold rounded-lg transition-all flex items-center justify-between border border-slate-700 hover:bg-slate-700 text-slate-300; }
+      .dark {
+        background-color: #0f172a;
+        color: #f8fafc;
+      }
+      .dark .bg-white {
+        background-color: #1e293b;
+        border-color: #334155;
+      }
+      .minda-red {
+        border-top: 4px solid #ed1c24;
+      }
+      .minda-blue {
+        border-top: 4px solid #1e3a8a;
+      }
+      /* Style for the separate download buttons */
+      .download-btn {
+        @apply w-full text-left px-4 py-2 text-[10px] font-bold rounded-lg transition-all flex items-center justify-between border border-slate-700 hover:bg-slate-700 text-slate-300 mb-2;
+      }
     </style>
-</head>
-<body class="bg-gray-50 font-sans transition-colors duration-300" id="bodyTag">
-    <nav class="bg-[#1e3a8a] text-white p-4 shadow-lg flex justify-between items-center">
-        <div class="container mx-auto flex justify-between items-center">
-            <h1 class="text-xl font-bold tracking-tight flex items-center gap-2">
-                <span class="bg-white text-[#1e3a8a] px-2 py-0.5 rounded text-sm uppercase">Uno Minda</span>
-                <span class="font-light">Digital Production Planning</span>
-            </h1>
-            <div class="flex items-center space-x-6 text-sm font-medium">
-                <a href="/frontend/index.html" class="hover:text-blue-200 border-b-2 border-white pb-1">Dashboard</a>
-                <a href="/frontend/utilization.html" class="hover:text-blue-200">Analytics</a>
-                <button onclick="toggleDarkMode()" class="p-2 bg-blue-900/50 rounded-full hover:bg-blue-800 transition">🌙</button>
-            </div>
+  </head>
+  <body
+    class="bg-gray-50 font-sans transition-colors duration-300"
+    id="bodyTag"
+  >
+    <nav class="bg-[#1e3a8a] text-white p-3 shadow-lg">
+      <div class="container mx-auto flex justify-between items-center">
+        <div class="flex items-center gap-4">
+          <div class="bg-white p-1 rounded-lg shadow-inner">
+            <img
+              src="/frontend/image_00969b.png"
+              alt="Uno Minda Logo"
+              class="h-10 object-contain"
+            />
+          </div>
+          <div class="h-8 w-[1px] bg-white/20 hidden md:block"></div>
+          <span class="text-lg font-light tracking-wide hidden md:block"
+            >Digital Production Planning</span
+          >
         </div>
+
+        <div class="flex items-center space-x-6 text-sm font-medium">
+          <a
+            href="/frontend/index.html"
+            class="hover:text-blue-200 transition-colors"
+            >Dashboard</a
+          >
+          <a
+            href="/frontend/utilization.html"
+            class="hover:text-blue-200 transition-colors"
+            >Analytics</a
+          >
+          <button
+            onclick="toggleDarkMode()"
+            class="p-2 bg-blue-900/50 rounded-full hover:bg-blue-800 transition"
+          >
+            🌙
+          </button>
+        </div>
+      </div>
     </nav>
 
     <div class="container mx-auto py-8 px-4">
-        <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
-            <div class="lg:col-span-1 space-y-6">
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100" id="sidebarBorder">
-                    <label class="block text-[10px] font-bold text-gray-400 uppercase mb-2 text-center">Production Line</label>
-                    <div class="mb-6 p-1 bg-gray-100 rounded-lg flex border">
-                        <button type="button" onclick="setSection('VT')" id="btnVT" class="flex-1 py-2 text-[10px] font-black rounded transition-all bg-[#1e3a8a] text-white shadow">VERTICAL</button>
-                        <button type="button" onclick="setSection('HZ')" id="btnHZ" class="flex-1 py-2 text-[10px] font-black rounded transition-all text-gray-500 hover:bg-gray-200">HORIZONTAL</button>
-                    </div>
-
-                    <form id="uploadForm" class="space-y-4">
-                        <div class="space-y-3">
-                            <div><label class="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-2">Master File</label><input type="file" id="book" class="block w-full text-xs text-slate-500 file:mr-3 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-[10px] file:font-bold file:bg-blue-50 file:text-blue-700" /></div>
-                            <div><label class="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-2">Inventory</label><input type="file" id="inventory" class="block w-full text-xs text-slate-500 file:mr-3 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-[10px] file:font-bold file:bg-blue-50 file:text-blue-700" /></div>
-                            <div><label class="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-2">Matrix</label><input type="file" id="matrix" class="block w-full text-xs text-slate-500 file:mr-3 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-[10px] file:font-bold file:bg-blue-50 file:text-blue-700" /></div>
-                            <div><label class="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-2">Changeover</label><input type="file" id="changeover" class="block w-full text-xs text-slate-500 file:mr-3 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-[10px] file:font-bold file:bg-blue-50 file:text-blue-700" /></div>
-                            <div><label class="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-2">Terminal</label><input type="file" id="terminal" class="block w-full text-xs text-slate-500 file:mr-3 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-[10px] file:font-bold file:bg-blue-50 file:text-blue-700" /></div>
-                            <div><label class="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-2">Demand</label><input type="file" id="demand" class="block w-full text-xs text-slate-500 file:mr-3 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-[10px] file:font-bold file:bg-blue-50 file:text-blue-700" /></div>
-                        </div>
-                        <button type="submit" class="w-full bg-[#ed1c24] text-white py-3 rounded-xl font-black uppercase tracking-wider shadow-lg hover:bg-red-700 transition-all active:scale-95">Create Plan</button>
-                    </form>
-                </div>
-
-                <div id="downloadSection" class="hidden bg-slate-900 p-5 rounded-xl shadow-xl border border-slate-800 space-y-3">
-                    <h4 class="text-[10px] font-black text-slate-500 uppercase tracking-widest text-center mb-2">Export Data</h4>
-                    
-                    <button onclick="downloadSheet('Plan')" class="download-btn">
-                        <span>Production Plan (CSV)</span>
-                        <span>📄</span>
-                    </button>
-
-                    <button onclick="downloadSheet('Machine_Util')" class="download-btn">
-                        <span>Utilization Report (CSV)</span>
-                        <span>📊</span>
-                    </button>
-
-                    <button onclick="downloadSheet('Inventory_Health')" class="download-btn">
-                        <span>Inventory Health (CSV)</span>
-                        <span>🩺</span>
-                    </button>
-
-                    <div class="pt-2">
-                        <button onclick="downloadMainExcel()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-2.5 rounded-lg text-[10px] font-black transition flex items-center justify-center gap-2 shadow-lg">
-                            <span>📥</span> FULL EXCEL REPORT
-                        </button>
-                    </div>
-                </div>
+      <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        <div class="lg:col-span-1 space-y-6">
+          <div
+            class="bg-white p-6 rounded-xl shadow-sm border border-gray-100"
+            id="sidebarBorder"
+          >
+            <label
+              class="block text-[10px] font-bold text-gray-400 uppercase mb-2 text-center"
+              >Production Line</label
+            >
+            <div class="mb-6 p-1 bg-gray-100 rounded-lg flex border">
+              <button
+                type="button"
+                onclick="setSection('VT')"
+                id="btnVT"
+                class="flex-1 py-2 text-[10px] font-black rounded transition-all bg-[#1e3a8a] text-white shadow"
+              >
+                VERTICAL
+              </button>
+              <button
+                type="button"
+                onclick="setSection('HZ')"
+                id="btnHZ"
+                class="flex-1 py-2 text-[10px] font-black rounded transition-all text-gray-500 hover:bg-gray-200"
+              >
+                HORIZONTAL
+              </button>
             </div>
 
-            <div class="lg:col-span-3">
-                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-8 minda-blue" id="setupBorder">
-                    <div class="bg-gray-800 text-white p-4 flex justify-between items-center">
-                        <h2 class="text-sm font-bold uppercase tracking-widest">Shop Floor Memory</h2>
-                        <button onclick="saveAllStates()" class="text-[10px] bg-white text-gray-800 px-4 py-1.5 rounded font-black hover:bg-blue-50 transition">SAVE STATES</button>
-                    </div>
-                    <div class="p-6 grid grid-cols-2 md:grid-cols-5 gap-4" id="stateGrid"></div>
+            <form id="uploadForm" class="space-y-4">
+              <div class="space-y-3">
+                <div>
+                  <label
+                    class="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-2"
+                    >Master File</label
+                  ><input
+                    type="file"
+                    id="book"
+                    class="block w-full text-xs text-slate-500 file:mr-3 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-[10px] file:font-bold file:bg-blue-50 file:text-blue-700"
+                  />
                 </div>
+                <div>
+                  <label
+                    class="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-2"
+                    >Inventory</label
+                  ><input
+                    type="file"
+                    id="inventory"
+                    class="block w-full text-xs text-slate-500 file:mr-3 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-[10px] file:font-bold file:bg-blue-50 file:text-blue-700"
+                  />
+                </div>
+                <div>
+                  <label
+                    class="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-2"
+                    >Matrix</label
+                  ><input
+                    type="file"
+                    id="matrix"
+                    class="block w-full text-xs text-slate-500 file:mr-3 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-[10px] file:font-bold file:bg-blue-50 file:text-blue-700"
+                  />
+                </div>
+                <div>
+                  <label
+                    class="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-2"
+                    >Changeover</label
+                  ><input
+                    type="file"
+                    id="changeover"
+                    class="block w-full text-xs text-slate-500 file:mr-3 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-[10px] file:font-bold file:bg-blue-50 file:text-blue-700"
+                  />
+                </div>
+                <div>
+                  <label
+                    class="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-2"
+                    >Terminal</label
+                  ><input
+                    type="file"
+                    id="terminal"
+                    class="block w-full text-xs text-slate-500 file:mr-3 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-[10px] file:font-bold file:bg-blue-50 file:text-blue-700"
+                  />
+                </div>
+                <div>
+                  <label
+                    class="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-2"
+                    >Demand</label
+                  ><input
+                    type="file"
+                    id="demand"
+                    class="block w-full text-xs text-slate-500 file:mr-3 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-[10px] file:font-bold file:bg-blue-50 file:text-blue-700"
+                  />
+                </div>
+              </div>
+              <button
+                type="submit"
+                class="w-full bg-[#ed1c24] text-white py-3 rounded-xl font-black uppercase tracking-wider shadow-lg hover:bg-red-700 transition-all active:scale-95"
+              >
+                Create Plan
+              </button>
+            </form>
+          </div>
 
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-black text-gray-800 tracking-tight" id="planTitle">Production Plan (VT)</h2>
-                    <input type="text" id="tableSearch" onkeyup="filterTable()" placeholder="Filter parts..." class="px-4 py-2 border border-gray-200 rounded-xl text-sm w-64 focus:ring-2 focus:ring-blue-500 outline-none" />
-                </div>
+          <div
+            id="downloadSection"
+            class="hidden bg-slate-900 p-5 rounded-xl shadow-xl border border-slate-800"
+          >
+            <h4
+              class="text-[10px] font-black text-slate-500 uppercase tracking-widest text-center mb-4"
+            >
+              Export Reports
+            </h4>
 
-                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden min-h-[400px]">
-                    <table class="w-full text-left border-collapse" id="planTable">
-                        <thead class="bg-gray-50 text-gray-500 uppercase text-[10px] font-black tracking-wider">
-                            <tr>
-                                <th class="p-4 border-b">Machine</th>
-                                <th class="p-4 border-b">Part Number</th>
-                                <th class="p-4 text-right border-b">Qty Planned</th>
-                                <th class="p-4 text-right border-b">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody id="planTableBody" class="text-gray-700 text-sm">
-                            <tr><td colspan="4" class="p-20 text-center text-slate-400 italic">No plan found in memory.</td></tr>
-                        </tbody>
-                    </table>
-                </div>
+            <button onclick="downloadSheet('Plan')" class="download-btn">
+              <span>Production Plan</span>
+              <span class="text-blue-400 text-xs">CSV</span>
+            </button>
+
+            <button
+              onclick="downloadSheet('Machine_Util')"
+              class="download-btn"
+            >
+              <span>Machine Utilization</span>
+              <span class="text-blue-400 text-xs">CSV</span>
+            </button>
+
+            <button
+              onclick="downloadSheet('Inventory_Health')"
+              class="download-btn"
+            >
+              <span>Inventory Health</span>
+              <span class="text-blue-400 text-xs">CSV</span>
+            </button>
+
+            <button onclick="downloadSheet('Part_Audit')" class="download-btn">
+              <span>Part Audit</span>
+              <span class="text-blue-400 text-xs">CSV</span>
+            </button>
+
+            <div class="mt-4 pt-4 border-t border-slate-800">
+              <button
+                onclick="downloadMainExcel()"
+                class="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-2.5 rounded-lg text-[10px] font-black transition flex items-center justify-center gap-2 shadow-lg"
+              >
+                📥 DOWNLOAD FULL EXCEL
+              </button>
             </div>
+          </div>
         </div>
+
+        <div class="lg:col-span-3">
+          <div
+            class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-8 minda-blue"
+            id="setupBorder"
+          >
+            <div
+              class="bg-gray-800 text-white p-4 flex justify-between items-center"
+            >
+              <h2 class="text-sm font-bold uppercase tracking-widest">
+                Shop Floor Memory
+              </h2>
+              <button
+                onclick="saveAllStates()"
+                class="text-[10px] bg-white text-gray-800 px-4 py-1.5 rounded font-black hover:bg-blue-50 transition"
+              >
+                SAVE STATES
+              </button>
+            </div>
+            <div
+              class="p-6 grid grid-cols-2 md:grid-cols-5 gap-4"
+              id="stateGrid"
+            ></div>
+          </div>
+
+          <div class="flex justify-between items-center mb-6">
+            <h2
+              class="text-2xl font-black text-gray-800 tracking-tight"
+              id="planTitle"
+            >
+              Production Plan (VT)
+            </h2>
+            <input
+              type="text"
+              id="tableSearch"
+              onkeyup="filterTable()"
+              placeholder="Filter parts..."
+              class="px-4 py-2 border border-gray-200 rounded-xl text-sm w-64 focus:ring-2 focus:ring-blue-500 outline-none"
+            />
+          </div>
+
+          <div
+            class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden min-h-[400px]"
+          >
+            <table class="w-full text-left border-collapse" id="planTable">
+              <thead
+                class="bg-gray-50 text-gray-500 uppercase text-[10px] font-black tracking-wider"
+              >
+                <tr>
+                  <th class="p-4 border-b">Machine</th>
+                  <th class="p-4 border-b">Part Number</th>
+                  <th class="p-4 text-right border-b">Qty Planned</th>
+                  <th class="p-4 text-right border-b">Status</th>
+                </tr>
+              </thead>
+              <tbody id="planTableBody" class="text-gray-700 text-sm">
+                <tr>
+                  <td
+                    colspan="4"
+                    class="p-20 text-center text-slate-400 italic"
+                  >
+                    No production plan found. Run optimizer to generate.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <div id="progressOverlay" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center">
-        <div class="bg-white p-8 rounded-3xl shadow-2xl text-center">
-            <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p class="text-xs font-bold text-slate-600 uppercase">Engine Processing...</p>
-        </div>
+    <div
+      id="progressOverlay"
+      class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center"
+    >
+      <div class="bg-white p-8 rounded-3xl shadow-2xl text-center">
+        <div
+          class="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600 mx-auto mb-4"
+        ></div>
+        <p class="text-xs font-bold text-slate-600 uppercase">
+          Engine Processing...
+        </p>
+      </div>
     </div>
 
     <script>
-        const machineList = ["M1", "M2", "M3", "M4", "M5", "M6", "M7", "M8", "M9", "M10"];
-        let MASTER_PLAN = [];
-        let currentSection = localStorage.getItem("aps_section") || "VT";
+      const machineList = [
+        "M1",
+        "M2",
+        "M3",
+        "M4",
+        "M5",
+        "M6",
+        "M7",
+        "M8",
+        "M9",
+        "M10",
+      ];
+      let MASTER_PLAN = [];
+      let currentSection = localStorage.getItem("aps_section") || "VT";
 
-        function toggleDarkMode() { document.getElementById("bodyTag").classList.toggle("dark"); }
+      function toggleDarkMode() {
+        document.getElementById("bodyTag").classList.toggle("dark");
+      }
 
-        function setSection(section) {
-            currentSection = section;
-            localStorage.setItem("aps_section", section);
-            const vtBtn = document.getElementById("btnVT"), hzBtn = document.getElementById("btnHZ");
-            document.getElementById("planTitle").innerText = `Production Plan (${section})`;
-            
-            if (section === "VT") {
-                vtBtn.className = "flex-1 py-2 text-[10px] font-black rounded bg-[#1e3a8a] text-white shadow";
-                hzBtn.className = "flex-1 py-2 text-[10px] font-black rounded text-gray-500 hover:bg-gray-200";
-                document.getElementById("setupBorder").classList.replace("minda-red", "minda-blue");
-            } else {
-                hzBtn.className = "flex-1 py-2 text-[10px] font-black rounded bg-[#ed1c24] text-white shadow";
-                vtBtn.className = "flex-1 py-2 text-[10px] font-black rounded text-gray-500 hover:bg-gray-200";
-                document.getElementById("setupBorder").classList.replace("minda-blue", "minda-red");
-            }
+      function setSection(section) {
+        currentSection = section;
+        localStorage.setItem("aps_section", section);
+        const vtBtn = document.getElementById("btnVT"),
+          hzBtn = document.getElementById("btnHZ");
+        document.getElementById("planTitle").innerText =
+          `Production Plan (${section})`;
+
+        if (section === "VT") {
+          vtBtn.className =
+            "flex-1 py-2 text-[10px] font-black rounded bg-[#1e3a8a] text-white shadow";
+          hzBtn.className =
+            "flex-1 py-2 text-[10px] font-black rounded text-gray-500 hover:bg-gray-200";
+          document
+            .getElementById("setupBorder")
+            .classList.replace("minda-red", "minda-blue");
+        } else {
+          hzBtn.className =
+            "flex-1 py-2 text-[10px] font-black rounded bg-[#ed1c24] text-white shadow";
+          vtBtn.className =
+            "flex-1 py-2 text-[10px] font-black rounded text-gray-500 hover:bg-gray-200";
+          document
+            .getElementById("setupBorder")
+            .classList.replace("minda-blue", "minda-red");
         }
+      }
 
-        // --- NEW SEPARATE DOWNLOAD FUNCTIONS ---
-        function downloadSheet(type) {
-            // type: 'Plan', 'Machine_Util', 'Inventory_Health'
-            window.location.href = `http://127.0.0.1:8000/download-sheet?sheet_name=${type}`;
-        }
+      // Functions for separate downloads
+      function downloadSheet(type) {
+        // type: 'Plan', 'Machine_Util', 'Inventory_Health', 'Part_Audit'
+        window.location.href = `http://127.0.0.1:8000/download-sheet?sheet_name=${type}`;
+      }
 
-        function downloadMainExcel() {
-            window.location.href = `http://127.0.0.1:8000/download-main`;
-        }
+      function downloadMainExcel() {
+        window.location.href = `http://127.0.0.1:8000/download-main`;
+      }
 
-        document.addEventListener("DOMContentLoaded", () => {
-            setSection(currentSection);
-            const grid = document.getElementById("stateGrid");
-            grid.innerHTML = machineList.map(m => `
+      document.addEventListener("DOMContentLoaded", () => {
+        setSection(currentSection);
+        const grid = document.getElementById("stateGrid");
+        grid.innerHTML = machineList
+          .map(
+            (m) => `
                 <div class="flex flex-col space-y-1">
                     <label class="text-[10px] font-black text-gray-400 uppercase">${m}</label>
                     <input type="text" id="state-${m}" placeholder="Last Part..." class="border border-gray-100 p-2 rounded-lg text-xs outline-none focus:border-blue-500">
                 </div>
-            `).join("");
+            `,
+          )
+          .join("");
 
-            const savedPlan = localStorage.getItem("last_master_plan");
-            if (savedPlan) {
-                MASTER_PLAN = JSON.parse(savedPlan);
-                renderTable(MASTER_PLAN);
-                // SHOW DOWNLOADS if data exists
-                document.getElementById("downloadSection").classList.remove("hidden");
-            }
-
-            document.getElementById("uploadForm").addEventListener("submit", startOptimizing);
-        });
-
-        async function startOptimizing(e) {
-            e.preventDefault();
-            const overlay = document.getElementById("progressOverlay");
-            const formData = new FormData();
-            const fileIds = ["book", "inventory", "matrix", "changeover", "terminal", "demand"];
-            
-            for (let id of fileIds) {
-                const file = document.getElementById(id).files[0];
-                if (!file) { alert(`Required: ${id.toUpperCase()} file.`); return; }
-                formData.append(id, file);
-            }
-            formData.append("section", currentSection);
-            overlay.classList.remove("hidden");
-
-            try {
-                const res = await axios.post("http://127.0.0.1:8000/upload", formData);
-                MASTER_PLAN = res.data.plan;
-                localStorage.setItem("last_master_plan", JSON.stringify(MASTER_PLAN));
-                renderTable(MASTER_PLAN);
-                
-                // REVEAL DOWNLOAD SECTION
-                document.getElementById("downloadSection").classList.remove("hidden");
-
-            } catch (err) { alert("Optimizer Error."); }
-            finally { overlay.classList.add("hidden"); }
+        // On load, check if a plan exists to show the buttons
+        const savedPlan = localStorage.getItem("last_master_plan");
+        if (savedPlan && savedPlan !== "[]") {
+          MASTER_PLAN = JSON.parse(savedPlan);
+          renderTable(MASTER_PLAN);
+          document.getElementById("downloadSection").classList.remove("hidden");
         }
 
-        function renderTable(plan) {
-            const body = document.getElementById("planTableBody");
-            if (!plan || plan.length === 0) return;
-            body.innerHTML = plan.map(row => `
+        document
+          .getElementById("uploadForm")
+          .addEventListener("submit", startOptimizing);
+      });
+
+      async function startOptimizing(e) {
+        e.preventDefault();
+        const overlay = document.getElementById("progressOverlay");
+        const formData = new FormData();
+        const fileIds = [
+          "book",
+          "inventory",
+          "matrix",
+          "changeover",
+          "terminal",
+          "demand",
+        ];
+
+        for (let id of fileIds) {
+          const file = document.getElementById(id).files[0];
+          if (!file) {
+            alert(`Required: ${id.toUpperCase()} file.`);
+            return;
+          }
+          formData.append(id, file);
+        }
+        formData.append("section", currentSection);
+        overlay.classList.remove("hidden");
+
+        try {
+          const res = await axios.post(
+            "http://127.0.0.1:8000/upload",
+            formData,
+          );
+          if (res.data.plan) {
+            MASTER_PLAN = res.data.plan;
+            localStorage.setItem(
+              "last_master_plan",
+              JSON.stringify(MASTER_PLAN),
+            );
+            renderTable(MASTER_PLAN);
+
+            // UNHIDE Download buttons only after successful plan creation
+            document
+              .getElementById("downloadSection")
+              .classList.remove("hidden");
+          }
+        } catch (err) {
+          alert("Optimizer Error. Check your connection or file format.");
+        } finally {
+          overlay.classList.add("hidden");
+        }
+      }
+
+      function renderTable(plan) {
+        const body = document.getElementById("planTableBody");
+        if (!plan || plan.length === 0) return;
+        body.innerHTML = plan
+          .map(
+            (row) => `
                 <tr class="border-t hover:bg-blue-50/50">
                     <td class="p-4 font-black text-[#1e3a8a]">${row.Machine}</td>
                     <td class="p-4 font-medium text-slate-600">${row.Part}</td>
                     <td class="p-4 text-right font-bold text-slate-800">${Math.round(row.Qty_Planned).toLocaleString()}</td>
-                    <td class="p-4 text-right"><span class="px-3 py-1 bg-green-100 text-green-700 text-[9px] font-black rounded-full">PLAN READY</span></td>
+                    <td class="p-4 text-right"><span class="px-3 py-1 bg-green-100 text-green-700 text-[9px] font-black rounded-full uppercase tracking-tighter">Plan Ready</span></td>
                 </tr>
-            `).join("");
-        }
+            `,
+          )
+          .join("");
+      }
 
-        function filterTable() {
-            const q = document.getElementById("tableSearch").value.toLowerCase();
-            renderTable(MASTER_PLAN.filter(r => r.Machine.toLowerCase().includes(q) || r.Part.toLowerCase().includes(q)));
-        }
+      function filterTable() {
+        const q = document.getElementById("tableSearch").value.toLowerCase();
+        const filtered = MASTER_PLAN.filter(
+          (r) =>
+            r.Machine.toLowerCase().includes(q) ||
+            r.Part.toLowerCase().includes(q),
+        );
+        renderTable(filtered);
+      }
 
-        async function saveAllStates() {
-            const payload = {};
-            machineList.forEach((m) => {
-                const val = document.getElementById(`state-${m}`).value;
-                if (val) payload[m] = val.trim().toUpperCase();
-            });
-            await axios.post("http://127.0.0.1:8000/update-bulk-state", payload);
-            alert("States cached.");
-        }
+      async function saveAllStates() {
+        const payload = {};
+        machineList.forEach((m) => {
+          const val = document.getElementById(`state-${m}`).value;
+          if (val) payload[m] = val.trim().toUpperCase();
+        });
+        await axios.post("http://127.0.0.1:8000/update-bulk-state", payload);
+        alert("Shop floor states updated!");
+      }
     </script>
-</body>
+  </body>
 </html>
