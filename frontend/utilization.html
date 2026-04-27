@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Utilization Analytics | Smart APS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body class="bg-gray-50 font-sans">
+    <nav class="bg-[#1e3a8a] text-white p-4 shadow-lg mb-8">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-xl font-bold tracking-tight">UNO MINDA <span class="font-light">| Analytics</span></h1>
+            <a href="index.html" class="hover:text-blue-200 text-sm font-semibold border border-white/30 px-4 py-1 rounded-full transition">Back to Dashboard</a>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 text-center">
+            <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-blue-600">
+                <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Active Machines</p>
+                <h3 id="activeCount" class="text-3xl font-black text-gray-800">--</h3>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-red-500">
+                <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Idle Machines</p>
+                <h3 id="idleCount" class="text-3xl font-black text-gray-800">--</h3>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-green-500">
+                <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Avg Utilization</p>
+                <h3 id="avgUtil" class="text-3xl font-black text-gray-800">--%</h3>
+            </div>
+        </div>
+
+        <div class="max-w-5xl mx-auto bg-white p-8 rounded-3xl shadow-xl border border-gray-100 overflow-hidden relative">
+            <div class="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-blue-600 to-indigo-400"></div>
+            
+            <div class="flex justify-between items-end mb-8">
+                <div>
+                    <h2 class="text-xl font-black text-gray-800 tracking-tight">Station Load Distribution</h2>
+                    <p class="text-xs text-gray-400 font-medium italic">Measured against 22-hour available shift</p>
+                </div>
+                <div id="loadingStatus" class="bg-blue-50 text-blue-600 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest animate-pulse">Syncing Engine...</div>
+            </div>
+
+            <div class="relative h-[450px]">
+                <canvas id="utilChart"></canvas>
+            </div>
+        </div>
+
+        <div id="errorMessage" class="hidden mt-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl text-center text-sm">
+            Connection Lost. Ensure Python backend is running on port 8000.
+        </div>
+    </div>
+
+    <script>
+        window.onload = async function() {
+            try {
+                const res = await axios.get('http://127.0.0.1:8000/utilization-last');
+                if (res.data.error) {
+                    document.getElementById('loadingStatus').innerText = "No Run Data Found";
+                    return;
+                }
+                renderAnalytics(res.data);
+                document.getElementById('loadingStatus').classList.add('hidden');
+            } catch (err) {
+                document.getElementById('errorMessage').classList.remove('hidden');
+            }
+        };
+
+        function renderAnalytics(data) {
+            const utilData = data.utilization || [];
+            document.getElementById('activeCount').innerText = utilData.length;
+            document.getElementById('idleCount').innerText = (data.idle_machines || []).length;
+
+            const avg = utilData.length > 0 
+                ? (utilData.reduce((acc, curr) => acc + (curr['Utilization_%'] || 0), 0) / utilData.length).toFixed(1) 
+                : 0;
+            document.getElementById('avgUtil').innerText = avg + "%";
+
+            const ctx = document.getElementById('utilChart').getContext('2d');
+            const gradient = ctx.createLinearGradient(0, 400, 0, 0); // Vertical gradient
+            gradient.addColorStop(0, '#3b82f6');
+            gradient.addColorStop(1, '#60a5fa');
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: utilData.map(m => m.Machine),
+                    datasets: [{
+                        label: 'Utilization %',
+                        data: utilData.map(m => m['Utilization_%'] || 0),
+                        backgroundColor: utilData.map(m => {
+                            const v = m['Utilization_%'];
+                            if (v > 90) return '#10b981'; // Success Green
+                            if (v < 50) return '#f43f5e'; // Warning Red
+                            return gradient;
+                        }),
+                        borderRadius: 12,
+                        barThickness: 35,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#1e293b',
+                            padding: 12,
+                            displayColors: false,
+                            callbacks: { label: (ctx) => ` Load Intensity: ${ctx.raw.toFixed(1)}%` }
+                        }
+                    },
+                    scales: {
+                        y: { 
+                            max: 100, 
+                            grid: { color: '#f8fafc' }, 
+                            border: { display: false },
+                            ticks: { callback: v => v + "%", font: { weight: 'bold' } } 
+                        },
+                        x: { 
+                            grid: { display: false }, 
+                            border: { display: false }, 
+                            ticks: { font: { weight: 'bold', size: 13 } } 
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
