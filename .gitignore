@@ -1,0 +1,12 @@
+# Python environment
+__pycache__/
+*.pyc
+venv/
+
+# Local Data (Crucial to ignore)
+uploads/
+outputs/
+machine_state.json
+
+# System files
+.DS_Store
